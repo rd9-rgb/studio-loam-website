@@ -97,16 +97,11 @@ export default function Home() {
           >
             <div className="project-img-wrap">
               <Image
-               className="project-img"
+                className="project-img"
                 src={project.img}
                 alt={`${project.title} render`}
                 fill
                 sizes="(max-width: 820px) 100vw, 50vw"
-                style={
-                  project.title === "Casa Belvedere"
-                    ? { objectFit: "contain" }
-                    : undefined
-                }
               />
             </div>
             <div className="project-label">
