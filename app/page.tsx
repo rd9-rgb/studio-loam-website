@@ -1,50 +1,50 @@
 import Image from "next/image";
 import RevealInit from "./reveal-init";
+import { client } from "@/sanity/lib/client";
+import { urlFor } from "@/sanity/lib/image";
 
-const projects = [
-  {
-    location: "Milan, IT",
-    year: "2025",
-    title: "Casa Belvedere",
-    description:
-      "A full reno of a 1960s apartment — plaster walls, reclaimed oak, and a kitchen built around one long table.",
-    finish: "lime plaster, travertine",
-    scope: "full interior, 210m²",
-    img: "/images/building1.jpg",
-  },
-  {
-    location: "Lake Como, IT",
-    year: "2024",
-    title: "The Reading House",
-    description:
-      "A quiet lakeside retreat designed around a single deep window seat and a wall of built-in shelving.",
-    finish: "white oak, linen",
-    scope: "interior + built-ins",
-    img: "https://picsum.photos/id/1048/900/1125",
-  },
-  {
-    location: "Turin, IT",
-    year: "2024",
-    title: "Nord Loft",
-    description:
-      "An industrial shell reworked with warm plaster and brass hardware, keeping the original steel trusses exposed.",
-    finish: "brushed brass, steel",
-    scope: "full interior, 140m²",
-    img: "https://picsum.photos/id/1060/900/1125",
-  },
-  {
-    location: "Portofino, IT",
-    year: "2023",
-    title: "Hotel Aeri, Suite 4",
-    description:
-      "A boutique hospitality commission — twelve rooms, each tuned to a different quality of coastal light.",
-    finish: "terrazzo, rattan",
-    scope: "hospitality, 12 rooms",
-    img: "https://picsum.photos/id/1074/900/1125",
-  },
-];
+export const revalidate = 60;
 
-export default function Home() {
+type Project = {
+  _id: string;
+  title: string;
+  location: string;
+  year: string;
+  description: string;
+  finish: string;
+  scope: string;
+  image?: any;
+};
+
+type SiteSettings = {
+  heroEyebrow?: string;
+  heroHeadline?: string;
+  statementQuote?: string;
+  statementSignature?: string;
+  contactHeadline?: string;
+  contactEmail?: string;
+};
+
+function renderEmphasis(text: string) {
+  return text.split("*").map((part, i) =>
+    i % 2 === 1 ? <em key={i}>{part}</em> : part
+  );
+}
+
+export default async function Home() {
+  const [projects, settings] = await Promise.all([
+    client.fetch<Project[]>(
+      `*[_type == "project"] | order(order asc){_id, title, location, year, description, finish, scope, image}`
+    ),
+    client.fetch<SiteSettings | null>(`*[_type == "siteSettings"][0]`),
+  ]);
+
+  const heroHeadline =
+    settings?.heroHeadline || "Rooms built around *how light lands* in them.";
+  const contactHeadline =
+    settings?.contactHeadline || "Have a room that needs *better light?*";
+  const contactEmail = settings?.contactEmail || "hello@studioloam.example";
+
   return (
     <>
       <nav>
@@ -68,41 +68,44 @@ export default function Home() {
         <div className="hero-tint" />
         <div className="hero-content">
           <span className="hero-eyebrow">
-            Residential &amp; Hospitality Interiors — Est. 2016
+            {settings?.heroEyebrow ||
+              "Residential & Hospitality Interiors — Est. 2016"}
           </span>
-          <h1>
-            Rooms built around <em>how light lands</em> in them.
-          </h1>
+          <h1>{renderEmphasis(heroHeadline)}</h1>
         </div>
       </section>
 
       <section className="statement wrap">
         <p>
-          We start with the site, not the sofa — orientation, material, and
-          the hour the room is used most, then design toward that.
+          {settings?.statementQuote ||
+            "We start with the site, not the sofa — orientation, material, and the hour the room is used most, then design toward that."}
         </p>
-        <span className="sig">— Studio Loam, Founding Principle</span>
+        <span className="sig">
+          {settings?.statementSignature || "— Studio Loam, Founding Principle"}
+        </span>
       </section>
 
       <section className="projects wrap" id="projects">
         <div className="section-head">
           <h2>Selected Projects</h2>
-          <span className="count mono">04 of 27 shown</span>
+          <span className="count mono">{projects.length} shown</span>
         </div>
 
         {projects.map((project, i) => (
           <div
             className={`project reveal${i % 2 === 1 ? " reverse" : ""}`}
-            key={project.title}
+            key={project._id}
           >
             <div className="project-img-wrap">
-              <Image
-                className="project-img"
-                src={project.img}
-                alt={`${project.title} render`}
-                fill
-                sizes="(max-width: 820px) 100vw, 50vw"
-              />
+              {project.image && (
+                <Image
+                  className="project-img"
+                  src={urlFor(project.image).width(900).height(1125).url()}
+                  alt={`${project.title} render`}
+                  fill
+                  sizes="(max-width: 820px) 100vw, 50vw"
+                />
+              )}
             </div>
             <div className="project-label">
               <div className="plate">
@@ -160,11 +163,9 @@ export default function Home() {
       </section>
 
       <section className="contact wrap" id="contact">
-        <h2>
-          Have a room that needs <em>better light?</em>
-        </h2>
-        <a className="cta" href="mailto:hello@studioloam.example">
-          Start a project — hello@studioloam.example
+        <h2>{renderEmphasis(contactHeadline)}</h2>
+        <a className="cta" href={`mailto:${contactEmail}`}>
+          Start a project — {contactEmail}
         </a>
       </section>
 
