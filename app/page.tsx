@@ -10,7 +10,7 @@ const projects = [
       "A full reno of a 1960s apartment — plaster walls, reclaimed oak, and a kitchen built around one long table.",
     finish: "lime plaster, travertine",
     scope: "full interior, 210m²",
-    img: "https://picsum.photos/id/1080/900/1125",
+    img: "/images/building1.jpg",
   },
   {
     location: "Lake Como, IT",
