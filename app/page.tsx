@@ -5,7 +5,7 @@ const projects = [
   {
     location: "Milan, IT",
     year: "2025",
-    title: "Casa Belvedere",
+    title: "Casa Belvedere 2026",
     description:
       "A full reno of a 1960s apartment — plaster walls, reclaimed oak, and a kitchen built around one long table.",
     finish: "lime plaster, travertine",
